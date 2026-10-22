@@ -36,6 +36,10 @@ export const metadata: Metadata = {
     locale: "en_IN",
     siteName: "ScholMart",
   },
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
@@ -57,6 +61,17 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sora.variable}`}>
       <body className="min-h-screen bg-background text-foreground antialiased selection:bg-accent/20 selection:text-accent">
         <Providers>{children}</Providers>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').catch(() => {});
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

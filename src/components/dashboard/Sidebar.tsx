@@ -75,6 +75,14 @@ const NAVIGATION: NavSection[] = [
       { title: "ERP Settings", href: "/dashboard/settings", icon: Settings },
     ],
   },
+  {
+    section: "PORTALS & APIS",
+    items: [
+      { title: "School Portal", href: "/school-portal", icon: School },
+      { title: "Parent Store", href: "/portal", icon: ShoppingBag },
+      { title: "Developer APIs", href: "/docs", icon: Sparkles },
+    ],
+  },
 ];
 
 export function Sidebar({

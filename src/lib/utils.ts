@@ -13,6 +13,8 @@ export function formatCurrencyINR(amount: number): string {
   }).format(amount);
 }
 
+export const formatINR = formatCurrencyINR;
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("en-IN", {

@@ -50,7 +50,12 @@ export function CommandPalette({
     { id: "nav-payments", title: "Payments & Ledger Aging", category: "Navigation", href: "/dashboard/payments", icon: Receipt },
     { id: "nav-logistics", title: "Fleet Delivery & Dispatch", category: "Navigation", href: "/dashboard/logistics", icon: Truck },
     { id: "nav-crm", title: "CRM School Leads Pipeline", category: "Navigation", href: "/dashboard/crm", icon: Users },
+    { id: "nav-notifications", title: "Notifications & System Alerts", category: "Navigation", href: "/dashboard/notifications", icon: Sparkles },
+    { id: "nav-users", title: "Users & RBAC Permissions Matrix", category: "Navigation", href: "/dashboard/users", icon: Users },
     { id: "nav-settings", title: "ERP Settings & Profile", category: "Navigation", href: "/dashboard/settings", icon: Settings },
+    { id: "nav-school-portal", title: "School Institutional Portal (DPS)", category: "Navigation", href: "/school-portal", icon: School },
+    { id: "nav-parent-portal", title: "Parent Uniform Store", category: "Navigation", href: "/portal", icon: ShoppingBag },
+    { id: "nav-api-docs", title: "Developer REST API Explorer & OpenAPI", category: "Navigation", href: "/docs", icon: Command },
   ];
 
   const schoolItems: CommandItem[] = INITIAL_SCHOOLS.map((s) => ({
