@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore, DEMO_USERS, UserRole } from "@/lib/auth";
+import { CommandPalette } from "./CommandPalette";
 import {
   Search,
   Bell,
@@ -62,28 +63,48 @@ export function TopBar() {
     },
   ];
 
-  return (
-    <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-20">
-      {/* Left: Breadcrumbs & Page title */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-          <span>ERP</span>
-          <span>/</span>
-          <span className="text-foreground font-bold">{currentTitle}</span>
-        </div>
-      </div>
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
-      {/* Center: Quick Global Search Input */}
-      <div className="hidden md:flex items-center relative max-w-sm w-full mx-4">
-        <Search className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search schools, SKU, order ID, invoices... (Cmd+K)"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full h-9 pl-9 pr-4 rounded-xl border border-input bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-        />
-      </div>
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  return (
+    <>
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
+      <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-20">
+        {/* Left: Breadcrumbs & Page title */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+            <span>ERP</span>
+            <span>/</span>
+            <span className="text-foreground font-bold">{currentTitle}</span>
+          </div>
+        </div>
+
+        {/* Center: Quick Global Search Input / Command Palette Trigger */}
+        <div
+          onClick={() => setIsCommandPaletteOpen(true)}
+          className="hidden md:flex items-center relative max-w-sm w-full mx-4 cursor-pointer group"
+        >
+          <Search className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-hover:text-accent transition-colors" />
+          <div className="w-full h-9 pl-9 pr-12 rounded-xl border border-input bg-background/80 text-xs text-muted-foreground flex items-center group-hover:border-accent transition-colors select-none">
+            Search schools, orders, SKU...
+          </div>
+          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded bg-muted border border-border px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            ⌘K
+          </kbd>
+        </div>
 
       {/* Right Controls */}
       <div className="flex items-center gap-3">
@@ -194,5 +215,6 @@ export function TopBar() {
         </div>
       </div>
     </header>
+    </>
   );
 }
