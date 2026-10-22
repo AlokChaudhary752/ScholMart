@@ -1,0 +1,554 @@
+// Prisma Schema for ScholMart B2B School Uniform SaaS
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ----------------------------------------
+// ENUMS
+// ----------------------------------------
+
+enum UserRole {
+  SUPER_ADMIN
+  SUPPLIER_ADMIN
+  MANAGER
+  ACCOUNTANT
+  PRODUCTION_HEAD
+  STORE_KEEPER
+  SALES_EXECUTIVE
+  SCHOOL_REPRESENTATIVE
+  PARENT
+}
+
+enum Gender {
+  BOYS
+  GIRLS
+  UNISEX
+}
+
+enum Season {
+  REGULAR
+  SUMMER
+  WINTER
+  SPORTS
+  HOUSE
+}
+
+enum ItemCategory {
+  SHIRT
+  TROUSER
+  SKIRT
+  BLAZER
+  SWEATER
+  TIE
+  BELT
+  SOCKS
+  SPORTS_KIT
+  SHOES
+  LAB_COAT
+  ACCESSORY
+}
+
+enum OrderStatus {
+  DRAFT
+  QUOTATION_SENT
+  CONFIRMED
+  IN_PRODUCTION
+  QUALITY_CHECK
+  READY_FOR_DISPATCH
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
+enum ProductionStage {
+  CUTTING
+  STITCHING
+  EMBROIDERY
+  FINISHING
+  QUALITY_AUDIT
+  PACKING
+  COMPLETED
+}
+
+enum PaymentMode {
+  UPI
+  BANK_TRANSFER
+  CHEQUE
+  CASH
+  RAZORPAY_LINK
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+enum DeliveryStatus {
+  SCHEDULED
+  PACKED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RETURN_REQUESTED
+}
+
+// ----------------------------------------
+// AUTH & USERS
+// ----------------------------------------
+
+model User {
+  id               String       @id @default(uuid())
+  tenantId         String       @default("default_tenant")
+  email            String       @unique
+  phone            String?      @unique
+  fullName         String
+  passwordHash     String
+  role             UserRole     @default(SCHOOL_REPRESENTATIVE)
+  isActive         Boolean      @default(true)
+  isTwoFactorAuth  Boolean      @default(false)
+  avatarUrl        String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  // School association (if role is SCHOOL_REPRESENTATIVE or PARENT)
+  schoolId         String?
+  school           School?      @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+
+  // Relations
+  ordersCreated    Order[]      @relation("UserCreatedOrders")
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+
+  @@index([tenantId])
+  @@index([role])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String   @default("default_tenant")
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String   // e.g. "ORDER_CREATED", "STATUS_CHANGE", "INVOICE_GENERATED"
+  entity     String   // "Order", "School", "Inventory"
+  entityId   String?
+  details    Json?    // IP, User-Agent, state changes
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([entity, entityId])
+}
+
+// ----------------------------------------
+// SCHOOL MANAGEMENT
+// ----------------------------------------
+
+model School {
+  id              String         @id @default(uuid())
+  tenantId        String         @default("default_tenant")
+  name            String
+  code            String         @unique // e.g. "DPS-RKP", "VIBGYOR-01"
+  logoUrl         String?
+  affiliation     String?        // CBSE, ICSE, IB, State Board
+  contactPerson   String
+  contactEmail    String
+  contactPhone    String
+  addressLine1    String
+  addressLine2    String?
+  city            String
+  state           String
+  pincode         String
+  gstin           String?        // GST Identification Number
+  academicSession String         @default("2025-2026")
+  studentStrength Int            @default(0)
+  creditLimit     Decimal        @default(500000) @db.Decimal(12, 2)
+  creditDays      Int            @default(30)
+  isArchived      Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  branches        SchoolBranch[]
+  uniformPolicies UniformPolicy[]
+  orders          Order[]
+  invoices        Invoice[]
+  students        Student[]
+  users           User[]
+
+  @@index([tenantId])
+  @@index([city])
+}
+
+model SchoolBranch {
+  id          String   @id @default(uuid())
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  branchName  String   // e.g., "North Campus", "Junior Wing"
+  city        String
+  contactName String?
+  phone       String?
+  address     String?
+  createdAt   DateTime @default(now())
+
+  @@index([schoolId])
+}
+
+// ----------------------------------------
+// UNIFORM CATALOG & POLICIES
+// ----------------------------------------
+
+model UniformItem {
+  id             String         @id @default(uuid())
+  tenantId       String         @default("default_tenant")
+  sku            String         @unique // e.g., "SHIRT-B-28-NVY"
+  name           String         // e.g., "Boys Premium Oxford Shirt"
+  category       ItemCategory
+  gender         Gender         @default(UNISEX)
+  fabricDetails  String?        // e.g., "65% Poly 35% Cotton, Anti-wrinkle"
+  colorHex       String?        // e.g., "#0B192C"
+  colorName      String?        // e.g., "Navy Blue"
+  basePrice      Decimal        @db.Decimal(10, 2)
+  gstRate        Decimal        @default(5.0) @db.Decimal(5, 2) // 5% or 12%
+  availableSizes String[]       // ["26", "28", "30", "32", "34", "36", "38", "40", "42"]
+  sizeChartUrl   String?
+  imageUrl       String?
+  isEmbroidery   Boolean        @default(true)
+  embroiderySpec String?        // "Left chest pocket, 5.5cm crest"
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  policyItems    PolicyItem[]
+  priceSlabs     PriceSlab[]
+  orderItems     OrderItem[]
+  inventory      InventoryItem?
+
+  @@index([tenantId])
+  @@index([category])
+}
+
+model UniformPolicy {
+  id              String        @id @default(uuid())
+  schoolId        String
+  school          School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  academicSession String        @default("2025-2026")
+  classGradeFrom  Int           // e.g., 1 (Class 1)
+  classGradeTo    Int           // e.g., 5 (Class 5)
+  season          Season        @default(REGULAR)
+  title           String        // e.g., "Primary Boys Summer Uniform"
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items           PolicyItem[]
+
+  @@index([schoolId])
+}
+
+model PolicyItem {
+  id              String        @id @default(uuid())
+  policyId        String
+  policy          UniformPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  itemId          String
+  item            UniformItem   @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  isMandatory     Boolean       @default(true)
+  minimumQuantity Int           @default(2) // e.g. 2 shirts per student
+
+  @@index([policyId])
+}
+
+model PriceSlab {
+  id          String      @id @default(uuid())
+  itemId      String
+  item        UniformItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  minQuantity Int         // e.g. 100
+  maxQuantity Int?        // e.g. 500 (null for infinity)
+  unitPrice   Decimal     @db.Decimal(10, 2)
+
+  @@index([itemId])
+}
+
+// ----------------------------------------
+// STUDENTS & MEASUREMENTS
+// ----------------------------------------
+
+model Student {
+  id             String        @id @default(uuid())
+  schoolId       String
+  school         School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  admissionNo    String
+  fullName       String
+  gender         Gender
+  classGrade     String        // e.g., "Grade 6-B"
+  section        String?
+  parentName     String?
+  parentPhone    String?
+  parentEmail    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  measurements   Measurement[]
+
+  @@unique([schoolId, admissionNo])
+  @@index([schoolId])
+}
+
+model Measurement {
+  id             String    @id @default(uuid())
+  studentId      String
+  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  chest          Float?    // in inches
+  waist          Float?
+  shoulder       Float?
+  length         Float?
+  collarNeck     Float?
+  inseam         Float?
+  recommendedSize String?  // e.g., "Size 32"
+  recordedBy     String?
+  academicYear   String    @default("2025-2026")
+  createdAt      DateTime  @default(now())
+
+  @@index([studentId])
+}
+
+// ----------------------------------------
+// ORDERS & PRODUCTION
+// ----------------------------------------
+
+model Order {
+  id              String            @id @default(uuid())
+  tenantId        String            @default("default_tenant")
+  orderNumber     String            @unique // e.g., "ORD-2026-0042"
+  schoolId        String
+  school          School            @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  userId          String?
+  creator         User?             @relation("UserCreatedOrders", fields: [userId], references: [id], onDelete: SetNull)
+  status          OrderStatus       @default(DRAFT)
+  academicSession String            @default("2025-2026")
+  totalQuantity   Int               @default(0)
+  subtotal        Decimal           @default(0) @db.Decimal(12, 2)
+  gstTotal        Decimal           @default(0) @db.Decimal(12, 2)
+  grandTotal      Decimal           @default(0) @db.Decimal(12, 2)
+  notes           String?
+  targetDelivery  DateTime?
+  dispatchedAt    DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  items           OrderItem[]
+  production      ProductionOrder[]
+  invoices        Invoice[]
+  deliveries      Delivery[]
+
+  @@index([tenantId])
+  @@index([schoolId])
+  @@index([status])
+}
+
+model OrderItem {
+  id          String      @id @default(uuid())
+  orderId     String
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        UniformItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  size        String      // e.g. "32"
+  quantity    Int
+  unitPrice   Decimal     @db.Decimal(10, 2)
+  gstPercent  Decimal     @default(5.0) @db.Decimal(5, 2)
+  totalPrice  Decimal     @db.Decimal(12, 2)
+
+  @@index([orderId])
+  @@index([itemId])
+}
+
+model ProductionOrder {
+  id              String          @id @default(uuid())
+  orderId         String
+  order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  stage           ProductionStage @default(CUTTING)
+  assignedTo      String?         // Tailor name or Job worker unit
+  piecesCut       Int             @default(0)
+  piecesStitched  Int             @default(0)
+  piecesEmbroidered Int           @default(0)
+  piecesPacked    Int             @default(0)
+  qcRejected      Int             @default(0)
+  qcPassed        Int             @default(0)
+  notes           String?
+  startDate       DateTime?
+  completedDate   DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([orderId])
+  @@index([stage])
+}
+
+// ----------------------------------------
+// INVENTORY & SUPPLIERS
+// ----------------------------------------
+
+model InventoryItem {
+  id             String          @id @default(uuid())
+  tenantId       String          @default("default_tenant")
+  uniformItemId  String?         @unique
+  uniformItem    UniformItem?    @relation(fields: [uniformItemId], references: [id], onDelete: Cascade)
+  rawMaterialName String?        // e.g. "Navy Raymond Suiting Fabric (Meters)"
+  warehouseLocation String       @default("Main Warehouse A")
+  sizeStockMap   Json?           // {"28": 50, "30": 120, "32": 85, "34": 40}
+  currentStock   Int             @default(0)
+  reorderLevel   Int             @default(50)
+  unitCost       Decimal         @default(0) @db.Decimal(10, 2)
+  updatedAt      DateTime        @updatedAt
+
+  stockMovements StockMovement[]
+
+  @@index([tenantId])
+}
+
+model StockMovement {
+  id              String        @id @default(uuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  changeQty       Int           // +100 or -50
+  reason          String        // "PRODUCTION_CONSUMPTION", "PURCHASE_RECEIPT", "RETURN"
+  referenceDoc    String?       // PO or Order ID
+  createdAt       DateTime      @default(now())
+
+  @@index([inventoryItemId])
+}
+
+model Supplier {
+  id            String          @id @default(uuid())
+  tenantId      String          @default("default_tenant")
+  companyName   String
+  contactPerson String
+  phone         String
+  email         String?
+  gstin         String?
+  materials     String?         // Fabric, Threads, Buttons, Zippers
+  city          String
+  createdAt     DateTime        @default(now())
+
+  purchaseOrders PurchaseOrder[]
+
+  @@index([tenantId])
+}
+
+model PurchaseOrder {
+  id          String   @id @default(uuid())
+  supplierId  String
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  poNumber    String   @unique
+  totalAmount Decimal  @db.Decimal(12, 2)
+  status      String   @default("ISSUED") // ISSUED, RECEIVED, CANCELLED
+  itemsJson   Json
+  expectedDate DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([supplierId])
+}
+
+// ----------------------------------------
+// BILLING, PAYMENTS & LOGISTICS
+// ----------------------------------------
+
+model Invoice {
+  id            String        @id @default(uuid())
+  tenantId      String        @default("default_tenant")
+  invoiceNumber String        @unique // e.g., "INV-2026-0182"
+  schoolId      String
+  school        School        @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  orderId       String?
+  order         Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  subtotal      Decimal       @db.Decimal(12, 2)
+  cgst          Decimal       @default(0) @db.Decimal(10, 2)
+  sgst          Decimal       @default(0) @db.Decimal(10, 2)
+  igst          Decimal       @default(0) @db.Decimal(10, 2)
+  grandTotal    Decimal       @db.Decimal(12, 2)
+  paidAmount    Decimal       @default(0) @db.Decimal(12, 2)
+  balanceDue    Decimal       @db.Decimal(12, 2)
+  status        PaymentStatus @default(PENDING)
+  dueDate       DateTime
+  pdfUrl        String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  payments      Payment[]
+
+  @@index([tenantId])
+  @@index([schoolId])
+  @@index([status])
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  invoiceId     String
+  invoice       Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount        Decimal       @db.Decimal(12, 2)
+  mode          PaymentMode   @default(BANK_TRANSFER)
+  referenceNo   String?       // UTR, Cheque No, Razorpay Payment ID
+  receivedDate  DateTime      @default(now())
+  notes         String?
+
+  @@index([invoiceId])
+}
+
+model Delivery {
+  id              String         @id @default(uuid())
+  orderId         String
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  trackingNumber  String         @unique
+  vehicleNumber   String?
+  driverName      String?
+  driverPhone     String?
+  status          DeliveryStatus @default(SCHEDULED)
+  destinationCity String
+  dispatchedAt    DateTime?
+  deliveredAt     DateTime?
+  proofPhotoUrl   String?
+  receivedBy      String?
+  signatureData   String?        // Base64 signature
+  createdAt       DateTime       @default(now())
+
+  @@index([orderId])
+}
+
+// ----------------------------------------
+// CRM & NOTIFICATIONS
+// ----------------------------------------
+
+model CRMLead {
+  id            String   @id @default(uuid())
+  schoolName    String
+  contactPerson String
+  phone         String
+  email         String?
+  city          String
+  estimatedStudents Int?
+  stage         String   @default("CONTACTED") // "CONTACTED", "DEMO_DONE", "SAMPLE_SENT", "WON", "LOST"
+  nextFollowUp  DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO") // "INFO", "ORDER_UPDATE", "LOW_STOCK", "PAYMENT_DUE"
+  isRead    Boolean  @default(false)
+  linkUrl   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
