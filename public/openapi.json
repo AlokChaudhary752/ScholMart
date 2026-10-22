@@ -1,0 +1,198 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ScholMart Institutional Uniform Manufacturing ERP API",
+    "version": "1.0.0",
+    "description": "Comprehensive RESTful API for school onboarding, custom uniform catalog configuration, student sizing matrices, B2B wholesale order lifecycles, and GST-compliant tax invoicing.",
+    "contact": {
+      "name": "ScholMart Platform Team",
+      "email": "api@scholmart.in",
+      "url": "https://scholmart.in"
+    },
+    "license": {
+      "name": "Proprietary Commercial Enterprise",
+      "url": "https://scholmart.in/terms"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Local / Production API Gateway"
+    }
+  ],
+  "paths": {
+    "/schools": {
+      "get": {
+        "summary": "List affiliated educational institutions",
+        "tags": ["Schools"],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of schools list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "count": { "type": "integer", "example": 2 },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/School" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Register a new affiliated school",
+        "tags": ["Schools"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewSchoolInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "School onboarded successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "summary": "Query procurement and custom uniform production orders",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "name": "schoolId",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter orders by school ID"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by lifecycle stage (PENDING, EMBROIDERY, CUTTING, STITCHING, QC_APPROVED, DISPATCHED)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered list of bulk orders"
+          }
+        }
+      },
+      "post": {
+        "summary": "Submit a bulk school order",
+        "tags": ["Orders"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateOrderInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Order submitted and assigned to cutting floor" }
+        }
+      }
+    },
+    "/catalog": {
+      "get": {
+        "summary": "List uniform products with fabric specifications & bulk tiers",
+        "tags": ["Catalog"],
+        "responses": {
+          "200": { "description": "Uniform items array" }
+        }
+      },
+      "post": {
+        "summary": "Create uniform garment SKU",
+        "tags": ["Catalog"],
+        "responses": {
+          "201": { "description": "Product created" }
+        }
+      }
+    },
+    "/invoices": {
+      "get": {
+        "summary": "Retrieve GST tax invoices with HSN codes & breakdown",
+        "tags": ["Invoices & Billing"],
+        "responses": {
+          "200": { "description": "Invoices array" }
+        }
+      },
+      "post": {
+        "summary": "Generate GST tax invoice for completed order batch",
+        "tags": ["Invoices & Billing"],
+        "responses": {
+          "201": { "description": "Invoice generated" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "School": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "sch_dps_rkp" },
+          "name": { "type": "string", "example": "Delhi Public School, R.K. Puram" },
+          "code": { "type": "string", "example": "DPS-RKP" },
+          "board": { "type": "string", "example": "CBSE" },
+          "studentCount": { "type": "integer", "example": 4200 },
+          "city": { "type": "string", "example": "New Delhi" },
+          "state": { "type": "string", "example": "Delhi" },
+          "status": { "type": "string", "example": "ACTIVE" }
+        }
+      },
+      "NewSchoolInput": {
+        "type": "object",
+        "required": ["name", "code", "board", "city", "state", "contactPerson", "contactEmail", "contactPhone"],
+        "properties": {
+          "name": { "type": "string" },
+          "code": { "type": "string" },
+          "board": { "type": "string", "enum": ["CBSE", "ICSE", "IB", "CAMBRIDGE", "STATE_BOARD"] },
+          "studentCount": { "type": "integer" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "contactPerson": { "type": "string" },
+          "contactEmail": { "type": "string", "format": "email" },
+          "contactPhone": { "type": "string" },
+          "address": { "type": "string" },
+          "gstin": { "type": "string" }
+        }
+      },
+      "CreateOrderInput": {
+        "type": "object",
+        "required": ["schoolId", "academicYear", "totalAmount", "items"],
+        "properties": {
+          "schoolId": { "type": "string" },
+          "academicYear": { "type": "string", "example": "2026-2027" },
+          "totalAmount": { "type": "number", "example": 425000 },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": { "type": "string" },
+                "quantity": { "type": "integer" },
+                "unitPrice": { "type": "number" },
+                "sizeBreakdown": { "type": "object" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

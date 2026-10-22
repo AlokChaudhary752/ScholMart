@@ -99,22 +99,30 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 3. Set Environment Variables from `.env.example` (`DATABASE_URL`, `NEXTAUTH_SECRET`).
 4. Click **Deploy**.
 
-### Option B: Docker
-```dockerfile
-FROM node:20-alpine AS runner
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
-Build and run:
+4. Click **Deploy**.
+
+### Option B: Docker Compose (Full Stack + PostgreSQL)
 ```bash
-docker build -t scholmart .
-docker run -p 3000:3000 --env-file .env scholmart
+docker-compose up -d --build
 ```
+This boots up:
+- Next.js 14 App container on `http://localhost:3000` (optimized standalone Alpine container)
+- PostgreSQL 16 container on `localhost:5432` with persistent volumes and automated health checks
+
+### 🧪 Automated Testing Suite
+Run the test suite verifying Indian currency notation, 5% GST calculations, anthropometric sizing curves, and Zod API contracts:
+```bash
+npm test
+```
+
+### 📡 REST API & OpenAPI Specification
+ScholMart exposes production-ready REST endpoints:
+- `GET /api/schools` & `POST /api/schools`
+- `GET /api/orders` & `POST /api/orders`
+- `GET /api/catalog` & `POST /api/catalog`
+- `GET /api/invoices` & `POST /api/invoices`
+
+The full OpenAPI 3.0 specification is available at `public/openapi.json` and can be imported into Postman or Swagger UI.
 
 ---
 

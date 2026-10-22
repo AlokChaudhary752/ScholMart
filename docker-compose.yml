@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: scholmart_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-scholmart_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scholmart_secure_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-scholmart_erp}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-scholmart_admin} -d ${POSTGRES_DB:-scholmart_erp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scholmart_network
+
+  # ScholMart Next.js Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scholmart_app
+    restart: always
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-scholmart_admin}:${POSTGRES_PASSWORD:-scholmart_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-scholmart_erp}?schema=public
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-scholmart_super_secret_jwt_key_institution_2026}
+      - NEXTAUTH_URL=http://localhost:${PORT:-3000}
+      - NEXT_PUBLIC_APP_URL=http://localhost:${PORT:-3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - scholmart_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  scholmart_network:
+    driver: bridge

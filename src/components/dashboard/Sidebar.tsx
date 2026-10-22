@@ -23,6 +23,8 @@ import {
   ChevronRight,
   LogOut,
   Sparkles,
+  Bell,
+  ShieldCheck,
 } from "lucide-react";
 
 interface NavItem {
@@ -68,6 +70,8 @@ const NAVIGATION: NavSection[] = [
     section: "ENTERPRISE",
     items: [
       { title: "CRM School Leads", href: "/dashboard/crm", icon: Users },
+      { title: "Notifications", href: "/dashboard/notifications", icon: Bell, badge: "3" },
+      { title: "Users & Roles", href: "/dashboard/users", icon: ShieldCheck },
       { title: "ERP Settings", href: "/dashboard/settings", icon: Settings },
     ],
   },
