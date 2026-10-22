@@ -73,11 +73,17 @@ const config: Config = {
           "0%, 100%": { opacity: "0.6", transform: "scale(1)" },
           "50%": { opacity: "1", transform: "scale(1.05)" },
         },
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         float: "float 4s ease-in-out infinite",
         shimmer: "shimmer 2s infinite",
         "pulse-glow": "pulseGlow 3s ease-in-out infinite",
+        marquee: "marquee 35s linear infinite",
+        "spin-slow": "spin 8s linear infinite",
       },
       boxShadow: {
         glass: "0 8px 32px 0 rgba(11, 25, 44, 0.15)",
