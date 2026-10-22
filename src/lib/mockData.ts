@@ -699,3 +699,204 @@ export const INITIAL_PRODUCTION_BATCHES: ProductionOrderRecord[] = [
   },
 ];
 
+// ==========================================
+// PHASE 6: BILLING, PAYMENTS, DELIVERY & REPORTS
+// ==========================================
+
+export interface InvoiceRecord {
+  id: string;
+  invoiceNumber: string;
+  orderNumber: string;
+  schoolName: string;
+  schoolGstin: string;
+  subtotal: number;
+  cgst: number;
+  sgst: number;
+  igst: number;
+  grandTotal: number;
+  paidAmount: number;
+  balanceDue: number;
+  dueDate: string;
+  createdDate: string;
+  status: "PAID" | "PENDING" | "PARTIAL" | "OVERDUE";
+}
+
+export const INITIAL_INVOICES: InvoiceRecord[] = [
+  {
+    id: "inv-01",
+    invoiceNumber: "INV-2026-0182",
+    orderNumber: "ORD-2026-084",
+    schoolName: "Delhi Public School (DPS)",
+    schoolGstin: "07AAAAA0000A1Z5",
+    subtotal: 2840000,
+    cgst: 71000,
+    sgst: 71000,
+    igst: 0,
+    grandTotal: 2982000,
+    paidAmount: 2562000,
+    balanceDue: 420000,
+    dueDate: "2026-11-20",
+    createdDate: "2026-10-18",
+    status: "PARTIAL",
+  },
+  {
+    id: "inv-02",
+    invoiceNumber: "INV-2026-0183",
+    orderNumber: "ORD-2026-085",
+    schoolName: "The Heritage School",
+    schoolGstin: "06BBBBB1111B2Z6",
+    subtotal: 820000,
+    cgst: 0,
+    sgst: 0,
+    igst: 41000,
+    grandTotal: 861000,
+    paidAmount: 0,
+    balanceDue: 861000,
+    dueDate: "2026-11-12",
+    createdDate: "2026-10-12",
+    status: "PENDING",
+  },
+  {
+    id: "inv-03",
+    invoiceNumber: "INV-2026-0180",
+    orderNumber: "ORD-2026-082",
+    schoolName: "St. Xavier's Senior High School",
+    schoolGstin: "08CCCCC2222C3Z7",
+    subtotal: 1040000,
+    cgst: 0,
+    sgst: 0,
+    igst: 52000,
+    grandTotal: 1092000,
+    paidAmount: 1092000,
+    balanceDue: 0,
+    dueDate: "2026-10-15",
+    createdDate: "2026-09-15",
+    status: "PAID",
+  },
+  {
+    id: "inv-04",
+    invoiceNumber: "INV-2026-0179",
+    orderNumber: "ORD-2026-079",
+    schoolName: "GD Goenka Signature School",
+    schoolGstin: "06EEEEE4444E5Z9",
+    subtotal: 619000,
+    cgst: 0,
+    sgst: 0,
+    igst: 31000,
+    grandTotal: 650000,
+    paidAmount: 0,
+    balanceDue: 650000,
+    dueDate: "2026-10-01",
+    createdDate: "2026-08-30",
+    status: "OVERDUE",
+  },
+];
+
+export interface PaymentReceipt {
+  id: string;
+  receiptNumber: string;
+  schoolName: string;
+  invoiceNumber: string;
+  amount: number;
+  mode: "NEFT / RTGS" | "CHEQUE" | "UPI" | "RAZORPAY_GATEWAY";
+  referenceNumber: string;
+  paymentDate: string;
+}
+
+export const INITIAL_PAYMENTS: PaymentReceipt[] = [
+  {
+    id: "pay-1",
+    receiptNumber: "RCT-2026-094",
+    schoolName: "Delhi Public School (DPS)",
+    invoiceNumber: "INV-2026-0182",
+    amount: 2562000,
+    mode: "NEFT / RTGS",
+    referenceNumber: "HDFCN26284910381",
+    paymentDate: "2026-10-19",
+  },
+  {
+    id: "pay-2",
+    receiptNumber: "RCT-2026-093",
+    schoolName: "St. Xavier's Senior High School",
+    invoiceNumber: "INV-2026-0180",
+    amount: 1092000,
+    mode: "CHEQUE",
+    referenceNumber: "CHQ-004819 (SBI Bank)",
+    paymentDate: "2026-10-14",
+  },
+  {
+    id: "pay-3",
+    receiptNumber: "RCT-2026-092",
+    schoolName: "Vibgyor Roots & Rise",
+    invoiceNumber: "INV-2026-0176",
+    amount: 580000,
+    mode: "RAZORPAY_GATEWAY",
+    referenceNumber: "pay_KxL48201aB4c9",
+    paymentDate: "2026-10-08",
+  },
+];
+
+export interface DeliveryShipment {
+  id: string;
+  trackingNumber: string;
+  schoolName: string;
+  orderNumber: string;
+  vehicleNumber: string;
+  driverName: string;
+  driverPhone: string;
+  destinationCity: string;
+  status: "SCHEDULED" | "IN_TRANSIT" | "OUT_FOR_DELIVERY" | "DELIVERED";
+  dispatchedDate: string;
+  etaDate: string;
+  totalCartons: number;
+  proofSignedBy?: string;
+}
+
+export const INITIAL_SHIPMENTS: DeliveryShipment[] = [
+  {
+    id: "shp-1",
+    trackingNumber: "SM-EXP-2026-881",
+    schoolName: "Delhi Public School (DPS)",
+    orderNumber: "ORD-2026-083",
+    vehicleNumber: "DL-1L-8842 (Ashok Leyland 16ft)",
+    driverName: "Suraj Pal Singh",
+    driverPhone: "+91 98101 22334",
+    destinationCity: "R.K. Puram, New Delhi",
+    status: "IN_TRANSIT",
+    dispatchedDate: "2026-10-22",
+    etaDate: "2026-10-23",
+    totalCartons: 42,
+  },
+  {
+    id: "shp-2",
+    trackingNumber: "SM-EXP-2026-880",
+    schoolName: "The Heritage School",
+    orderNumber: "ORD-2026-081",
+    vehicleNumber: "HR-55-9012 (Tata 407)",
+    driverName: "Dharmendra Yadav",
+    driverPhone: "+91 98202 33445",
+    destinationCity: "Sector 62, Gurugram",
+    status: "DELIVERED",
+    dispatchedDate: "2026-10-18",
+    etaDate: "2026-10-19",
+    totalCartons: 28,
+    proofSignedBy: "K.P. Sharma (Stores Officer, DPS)",
+  },
+  {
+    id: "shp-3",
+    trackingNumber: "SM-EXP-2026-879",
+    schoolName: "Vibgyor Roots & Rise",
+    orderNumber: "ORD-2026-078",
+    vehicleNumber: "KA-01-4491 (Eicher Pro)",
+    driverName: "M. Venkatesh",
+    driverPhone: "+91 98404 55667",
+    destinationCity: "Whitefield, Bengaluru",
+    status: "DELIVERED",
+    dispatchedDate: "2026-10-10",
+    etaDate: "2026-10-12",
+    totalCartons: 35,
+    proofSignedBy: "Anita Deshmukh (Admin Lead)",
+  },
+];
+
+
