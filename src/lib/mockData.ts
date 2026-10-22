@@ -339,3 +339,363 @@ export const AI_SUPPLY_INSIGHTS = [
       "Digital student sizing camp achieved 99.4% contactless match rate with only 3 exchange requests reported.",
   },
 ];
+
+// ==========================================
+// PHASE 5: ORDERS, SIZING, INVENTORY & PRODUCTION
+// ==========================================
+
+export type OrderPipelineStatus =
+  | "DRAFT"
+  | "QUOTATION_SENT"
+  | "CONFIRMED"
+  | "IN_PRODUCTION"
+  | "QUALITY_CHECK"
+  | "READY"
+  | "DISPATCHED"
+  | "DELIVERED";
+
+export interface OrderRecord {
+  id: string;
+  orderNumber: string;
+  schoolId: string;
+  schoolName: string;
+  itemsSummary: string;
+  totalQuantity: number;
+  subtotal: number;
+  gstTotal: number;
+  grandTotal: number;
+  status: OrderPipelineStatus;
+  targetDelivery: string;
+  createdDate: string;
+  notes: string;
+}
+
+export const INITIAL_ORDERS: OrderRecord[] = [
+  {
+    id: "ord-1",
+    orderNumber: "ORD-2026-084",
+    schoolId: "sch-1",
+    schoolName: "Delhi Public School (DPS)",
+    itemsSummary: "1,200 Wool Blazers + 2,400 Oxford Shirts",
+    totalQuantity: 3600,
+    subtotal: 2840000,
+    gstTotal: 142000,
+    grandTotal: 2982000,
+    status: "IN_PRODUCTION",
+    targetDelivery: "2026-11-15",
+    createdDate: "2026-10-18",
+    notes: "Requires DPS gold-crested buttons on all size 32-40 blazers.",
+  },
+  {
+    id: "ord-2",
+    orderNumber: "ORD-2026-085",
+    schoolId: "sch-2",
+    schoolName: "The Heritage School",
+    itemsSummary: "850 Pleated Skirts + 850 Sky Blue Shirts",
+    totalQuantity: 1700,
+    subtotal: 820000,
+    gstTotal: 41000,
+    grandTotal: 861000,
+    status: "QUALITY_CHECK",
+    targetDelivery: "2026-11-05",
+    createdDate: "2026-10-12",
+    notes: "Pre-sorted in class-wise eco bags for Grade 6 to 10.",
+  },
+  {
+    id: "ord-3",
+    orderNumber: "ORD-2026-086",
+    schoolId: "sch-3",
+    schoolName: "St. Xavier's Senior High School",
+    itemsSummary: "1,500 Charcoal Trousers + 600 House Sports Kits",
+    totalQuantity: 2100,
+    subtotal: 1040000,
+    gstTotal: 52000,
+    grandTotal: 1092000,
+    status: "CONFIRMED",
+    targetDelivery: "2026-11-20",
+    createdDate: "2026-10-20",
+    notes: "House kit colors split evenly: 375 Red, 375 Blue, 375 Green, 375 Yellow.",
+  },
+  {
+    id: "ord-4",
+    orderNumber: "ORD-2026-087",
+    schoolId: "sch-4",
+    schoolName: "Vibgyor Roots & Rise",
+    itemsSummary: "950 V-Neck Cardigans",
+    totalQuantity: 950,
+    subtotal: 580000,
+    gstTotal: 29000,
+    grandTotal: 609000,
+    status: "READY",
+    targetDelivery: "2026-10-28",
+    createdDate: "2026-10-05",
+    notes: "Packed in carton boxes with tamper-evident seal for Whitefield campus.",
+  },
+  {
+    id: "ord-5",
+    orderNumber: "ORD-2026-088",
+    schoolId: "sch-5",
+    schoolName: "GD Goenka Signature School",
+    itemsSummary: "600 Winter Blazers + 1,200 Regular Trousers",
+    totalQuantity: 1800,
+    subtotal: 1520000,
+    gstTotal: 76000,
+    grandTotal: 1596000,
+    status: "QUOTATION_SENT",
+    targetDelivery: "2026-11-30",
+    createdDate: "2026-10-21",
+    notes: "Quotation sent to R.K. Goel; waiting for formal board purchase approval.",
+  },
+  {
+    id: "ord-6",
+    orderNumber: "ORD-2026-083",
+    schoolId: "sch-1",
+    schoolName: "Delhi Public School (DPS)",
+    itemsSummary: "3,400 Sports House T-Shirts",
+    totalQuantity: 3400,
+    subtotal: 1428000,
+    gstTotal: 71400,
+    grandTotal: 1499400,
+    status: "DISPATCHED",
+    targetDelivery: "2026-10-24",
+    createdDate: "2026-09-28",
+    notes: "Vehicle DL-1L-8842 dispatched with live GPS tracking.",
+  },
+];
+
+export interface StudentMeasurement {
+  id: string;
+  admissionNo: string;
+  studentName: string;
+  schoolName: string;
+  classGrade: string;
+  chestInches: number;
+  waistInches: number;
+  shoulderInches: number;
+  recommendedSize: string;
+  fitStatus: "Perfect Fit" | "Exchange Requested" | "Alteration Done";
+  academicYear: string;
+}
+
+export const INITIAL_MEASUREMENTS: StudentMeasurement[] = [
+  {
+    id: "m-1",
+    admissionNo: "DPS-2025-412",
+    studentName: "Aarav Sharma",
+    schoolName: "Delhi Public School (DPS)",
+    classGrade: "Grade 7-B",
+    chestInches: 31.5,
+    waistInches: 27.0,
+    shoulderInches: 14.5,
+    recommendedSize: "32",
+    fitStatus: "Perfect Fit",
+    academicYear: "2025-2026",
+  },
+  {
+    id: "m-2",
+    admissionNo: "DPS-2025-413",
+    studentName: "Ananya Iyer",
+    schoolName: "Delhi Public School (DPS)",
+    classGrade: "Grade 7-B",
+    chestInches: 29.5,
+    waistInches: 25.5,
+    shoulderInches: 13.5,
+    recommendedSize: "30",
+    fitStatus: "Perfect Fit",
+    academicYear: "2025-2026",
+  },
+  {
+    id: "m-3",
+    admissionNo: "THS-2025-881",
+    studentName: "Kabir Malhotra",
+    schoolName: "The Heritage School",
+    classGrade: "Grade 9-A",
+    chestInches: 34.0,
+    waistInches: 30.0,
+    shoulderInches: 15.5,
+    recommendedSize: "36",
+    fitStatus: "Exchange Requested",
+    academicYear: "2025-2026",
+  },
+  {
+    id: "m-4",
+    admissionNo: "STX-2025-104",
+    studentName: "Rohan Deshmukh",
+    schoolName: "St. Xavier's Senior High School",
+    classGrade: "Grade 11-Science",
+    chestInches: 38.0,
+    waistInches: 32.5,
+    shoulderInches: 17.0,
+    recommendedSize: "40",
+    fitStatus: "Perfect Fit",
+    academicYear: "2025-2026",
+  },
+  {
+    id: "m-5",
+    admissionNo: "VIB-2025-092",
+    studentName: "Diya Pillai",
+    schoolName: "Vibgyor Roots & Rise",
+    classGrade: "Grade 5-Rose",
+    chestInches: 27.0,
+    waistInches: 24.0,
+    shoulderInches: 12.5,
+    recommendedSize: "28",
+    fitStatus: "Alteration Done",
+    academicYear: "2025-2026",
+  },
+];
+
+export interface RawMaterialStock {
+  id: string;
+  sku: string;
+  name: string;
+  type: "Fabric" | "Thread" | "Buttons" | "Zippers" | "Labels";
+  warehouse: string;
+  currentStock: number;
+  unit: "Meters" | "Reels" | "Gross" | "Thousands";
+  reorderLevel: number;
+  supplier: string;
+  status: "Optimal" | "Low Stock" | "Critical";
+  unitCost: number;
+}
+
+export const INITIAL_RAW_INVENTORY: RawMaterialStock[] = [
+  {
+    id: "inv-1",
+    sku: "FAB-RAY-NVY",
+    name: "Navy Suiting Wool-Viscose Twill Fabric (380 GSM)",
+    type: "Fabric",
+    warehouse: "Main Warehouse A (Okhla)",
+    currentStock: 320,
+    unit: "Meters",
+    reorderLevel: 500,
+    supplier: "Raymond Mills Ltd.",
+    status: "Low Stock",
+    unitCost: 380,
+  },
+  {
+    id: "inv-2",
+    sku: "FAB-OXF-WHT",
+    name: "Egyptian Cotton Oxford Shirting Fabric (Anti-Wrinkle)",
+    type: "Fabric",
+    warehouse: "Main Warehouse A (Okhla)",
+    currentStock: 2400,
+    unit: "Meters",
+    reorderLevel: 800,
+    supplier: "Arvind Mills Ltd.",
+    status: "Optimal",
+    unitCost: 145,
+  },
+  {
+    id: "inv-3",
+    sku: "THRD-MAD-GLD",
+    name: "Madeira Metallic Gold Embroidery Thread (5,000m Reels)",
+    type: "Thread",
+    warehouse: "Unit 2 Embroidery Hub",
+    currentStock: 48,
+    unit: "Reels",
+    reorderLevel: 25,
+    supplier: "Madeira India",
+    status: "Optimal",
+    unitCost: 420,
+  },
+  {
+    id: "inv-4",
+    sku: "BTN-BRS-DPS",
+    name: "DPS Institutional 24L Embossed Brass Blazer Buttons",
+    type: "Buttons",
+    warehouse: "Main Warehouse A (Okhla)",
+    currentStock: 120,
+    unit: "Gross",
+    reorderLevel: 80,
+    supplier: "Metal Trims India",
+    status: "Optimal",
+    unitCost: 180,
+  },
+  {
+    id: "inv-5",
+    sku: "ZIP-YKK-NVY",
+    name: "YKK 7-inch Concealed Nylon Zippers (Navy & Charcoal)",
+    type: "Zippers",
+    warehouse: "Main Warehouse A (Okhla)",
+    currentStock: 350,
+    unit: "Thousands",
+    reorderLevel: 500,
+    supplier: "YKK Fastening India",
+    status: "Low Stock",
+    unitCost: 4.5,
+  },
+];
+
+export interface ProductionOrderRecord {
+  id: string;
+  batchCode: string;
+  orderNumber: string;
+  schoolName: string;
+  garmentName: string;
+  totalPieces: number;
+  stage: "CUTTING" | "STITCHING" | "EMBROIDERY" | "FINISHING" | "QC_AUDIT" | "PACKED";
+  assignedTailor: string;
+  piecesCut: number;
+  piecesStitched: number;
+  piecesEmbroidered: number;
+  piecesPacked: number;
+  qcRejected: number;
+  qcPassed: number;
+  targetDate: string;
+}
+
+export const INITIAL_PRODUCTION_BATCHES: ProductionOrderRecord[] = [
+  {
+    id: "prod-1",
+    batchCode: "BATCH-BLZ-092",
+    orderNumber: "ORD-2026-084",
+    schoolName: "Delhi Public School (DPS)",
+    garmentName: "Boys Wool-Blend Winter Blazer (Navy)",
+    totalPieces: 1200,
+    stage: "EMBROIDERY",
+    assignedTailor: "Unit 2 Embroidery Line (Master Akhtar)",
+    piecesCut: 1200,
+    piecesStitched: 1050,
+    piecesEmbroidered: 720,
+    piecesPacked: 400,
+    qcRejected: 8,
+    qcPassed: 392,
+    targetDate: "2026-11-10",
+  },
+  {
+    id: "prod-2",
+    batchCode: "BATCH-SHR-104",
+    orderNumber: "ORD-2026-085",
+    schoolName: "The Heritage School",
+    garmentName: "Sky Blue Oxford Cotton Shirt",
+    totalPieces: 850,
+    stage: "QC_AUDIT",
+    assignedTailor: "Stitching Line A (Iqbal & Co.)",
+    piecesCut: 850,
+    piecesStitched: 850,
+    piecesEmbroidered: 850,
+    piecesPacked: 780,
+    qcRejected: 4,
+    qcPassed: 776,
+    targetDate: "2026-11-04",
+  },
+  {
+    id: "prod-3",
+    batchCode: "BATCH-SPT-331",
+    orderNumber: "ORD-2026-086",
+    schoolName: "St. Xavier's Senior High School",
+    garmentName: "Dry-Fit House Sports Track Kit",
+    totalPieces: 600,
+    stage: "CUTTING",
+    assignedTailor: "Laser Cut Unit (Master Surendra)",
+    piecesCut: 450,
+    piecesStitched: 120,
+    piecesEmbroidered: 100,
+    piecesPacked: 0,
+    qcRejected: 0,
+    qcPassed: 0,
+    targetDate: "2026-11-18",
+  },
+];
+
