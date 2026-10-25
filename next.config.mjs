@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
+  cleanDistDir: false,
   output: 'standalone',
   images: {
     remotePatterns: [

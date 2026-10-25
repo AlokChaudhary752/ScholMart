@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { School, Shirt, Clock, ShieldCheck, ThumbsUp, Sparkles } from "lucide-react";
+import { School, Shirt, Clock, ShieldCheck, Sparkles } from "lucide-react";
 
 const STATS = [
   {
