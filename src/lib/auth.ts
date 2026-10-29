@@ -75,7 +75,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (email: string, role = "SUPPLIER_ADMIN") => {
     set({ isLoading: true });
-    await new Promise((r) => setTimeout(r, 600));
 
     // Match demo user or create session
     let matchedUser = Object.values(DEMO_USERS).find(

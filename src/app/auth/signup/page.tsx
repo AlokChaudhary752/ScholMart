@@ -3,12 +3,24 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
-import { Uniform3DScene } from "@/components/3d/Uniform3DScene";
 import { useAuthStore, UserRole } from "@/lib/auth";
+
+const Uniform3DScene = dynamic(
+  () => import("@/components/3d/Uniform3DScene").then((m) => m.Uniform3DScene),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="h-8 w-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
+  }
+);
 import {
   Lock,
   Mail,

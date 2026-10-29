@@ -5,23 +5,29 @@ import { Sparkles } from "lucide-react";
 
 export function Preloader({ onComplete }: { onComplete?: () => void }) {
   const [progress, setProgress] = useState(0);
-  const [isDone, setIsDone] = useState(false);
+  const [isDone, setIsDone] = useState(true);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem("scholmart_seen_loader")) {
+      return;
+    }
+    setIsDone(false);
+
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer);
           setTimeout(() => {
             setIsDone(true);
+            sessionStorage.setItem("scholmart_seen_loader", "true");
             if (onComplete) onComplete();
-          }, 300);
+          }, 150);
           return 100;
         }
-        const increment = Math.floor(Math.random() * 18) + 8;
+        const increment = Math.floor(Math.random() * 25) + 15;
         return Math.min(100, prev + increment);
       });
-    }, 70);
+    }, 25);
 
     return () => clearInterval(timer);
   }, [onComplete]);
